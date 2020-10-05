@@ -12,7 +12,7 @@
     android:layout_width="0dp"
     android:layout_height="0dp"
     android:orientation="vertical"
-    android:padding="8dp"
+    android:padding="@dimen/half_margin"
     android:gravity="center"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent"
@@ -24,7 +24,7 @@
       android:id="@+id/guess"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_margin="8dp"
+      android:layout_margin="@dimen/half_margin"
       android:inputType="textCapCharacters"
       android:maxLength="4"
       android:hint="@string/guess_hint"/>
@@ -33,7 +33,7 @@
       android:id="@+id/submit"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_margin="8dp"
+      android:layout_margin="@dimen/half_margin"
       android:text="@string/submit"/>
 
   </LinearLayout>
