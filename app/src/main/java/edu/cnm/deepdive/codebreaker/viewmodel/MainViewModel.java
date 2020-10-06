@@ -19,6 +19,7 @@ public class MainViewModel extends AndroidViewModel {
 
   private final MutableLiveData<Game> game;
   private final MutableLiveData<Guess> guess;
+  private final MutableLiveData<Boolean> solved;
   private final MutableLiveData<Throwable> throwable;
   private final Random rng;
 
@@ -26,6 +27,7 @@ public class MainViewModel extends AndroidViewModel {
     super(application);
     game = new MutableLiveData<>();
     guess = new MutableLiveData<>();
+    solved = new MutableLiveData<>();
     throwable = new MutableLiveData<>();
     rng = new SecureRandom();
     startGame();
@@ -39,32 +41,42 @@ public class MainViewModel extends AndroidViewModel {
     return guess;
   }
 
+  public LiveData<Boolean> getSolved() {
+    return solved;
+  }
+
   public LiveData<Throwable> getThrowable() {
     return throwable;
   }
 
   public void startGame() {
     throwable.setValue(null);
+    guess.setValue(null);
+    solved.setValue(false);
     Game game = new Game(POOL, CODE_LENGTH, rng);
     this.game.setValue(game);
   }
 
   public void restartGame() {
     throwable.setValue(null);
+    guess.setValue(null);
+    solved.setValue(false);
     //noinspection ConstantConditions
     game.getValue().restart();
+    game.setValue(game.getValue());
   }
 
   public void guess(String text) {
     throwable.setValue(null);
     try {
+      Game game = this.game.getValue();
       //noinspection ConstantConditions
-      Guess guess = game.getValue().guess(text);
+      Guess guess = game.guess(text);
       this.guess.setValue(guess);
-    } catch (IllegalGuessLengthException e) {
-      e.printStackTrace();
-    } catch (IllegalGuessCharacterException e) {
-      e.printStackTrace();
+      this.game.setValue(game);
+      solved.setValue(guess.getCorrect() == game.getLength());
+    } catch (IllegalGuessLengthException | IllegalGuessCharacterException e) {
+      throwable.setValue(e);
     }
   }
 
