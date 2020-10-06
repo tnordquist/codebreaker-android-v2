@@ -1,5 +1,6 @@
 package edu.cnm.deepdive.codebreaker.controller;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -57,6 +58,10 @@ public class MainActivity extends AppCompatActivity {
         break;
       case R.id.restart_game:
         restartGame();
+        break;
+      case R.id.settings:
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
         break;
       default:
         handled = super.onOptionsItemSelected(item);
