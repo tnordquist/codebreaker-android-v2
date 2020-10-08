@@ -1,6 +1,5 @@
 package edu.cnm.deepdive.codebreaker.controller;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -11,7 +10,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -117,11 +115,6 @@ public class GameFragment extends Fragment implements InputFilter {
     });
     viewModel.getSolved().observe(lifecycleOwner, solved ->
         binding.guessControls.setVisibility(solved ? View.INVISIBLE : View.VISIBLE));
-    viewModel.getThrowable().observe(lifecycleOwner, (throwable) -> {
-      if (throwable != null) {
-        Toast.makeText(activity, throwable.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-      }
-    });
   }
 
   private void recordGuess() {
