@@ -1,4 +1,5 @@
 <resources>
+
   <string name="app_name">Codebreaker</string>
   <string name="submit">Submit</string>
   <string name="guess_hint">Guess</string>
@@ -12,4 +13,15 @@
   <string name="code_length_pref_key">code_length_pref</string>
   <string name="code_length_pref_title">Code length</string>
   <string name="code_length_pref_summary"><![CDATA[Length of secret code & required length of all guesses.]]></string>
+
+  <string-array name="color_labels">
+    <item>Red</item>
+    <item>Orange</item>
+    <item>Yellow</item>
+    <item>Green</item>
+    <item>Blue</item>
+    <item>Indigo</item>
+    <item>Violet</item>
+  </string-array>
+
 </resources>
