@@ -3,4 +3,13 @@
   <color name="colorPrimary">#6200EE</color>
   <color name="colorPrimaryDark">#3700B3</color>
   <color name="colorAccent">#03DAC5</color>
+
+  <color name="redSwatch">#FFFF0000</color>
+  <color name="orangeSwatch">#FFFFA500</color>
+  <color name="yellowSwatch">#FFFFFF00</color>
+  <color name="greenSwatch">#FF00FF00</color>
+  <color name="blueSwatch">#FF0000FF</color>
+  <color name="indigoSwatch">#FF4B0082</color>
+  <color name="violetSwatch">#FFEE82EE</color>
+
 </resources>
