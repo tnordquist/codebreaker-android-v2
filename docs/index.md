@@ -6,4 +6,8 @@
 
 ## Wireframe
 
-![Codebreaker wireframe diagram](img/wireframe.png)
+[![Codebreaker wireframe diagram](img/wireframe.png)](pdf/wireframe.pdf)
+
+## Technical design
+
+* [Entity-relationship diagram](entity-relationship.md)
