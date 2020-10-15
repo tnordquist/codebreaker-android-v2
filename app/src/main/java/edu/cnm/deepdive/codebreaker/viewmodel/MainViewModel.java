@@ -13,8 +13,6 @@ import edu.cnm.deepdive.codebreaker.model.Game;
 import edu.cnm.deepdive.codebreaker.model.IllegalGuessCharacterException;
 import edu.cnm.deepdive.codebreaker.model.IllegalGuessLengthException;
 import edu.cnm.deepdive.codebreaker.service.GameRepository;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Random;
