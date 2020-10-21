@@ -26,9 +26,7 @@ import edu.cnm.deepdive.codebreaker.viewmodel.MainViewModel;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GameFragment extends Fragment implements InputFilter {
-
-  private static final String INVALID_CHAR_PATTERN = String.format("[^%s]", MainViewModel.POOL);
+public class GameFragment extends Fragment {
 
   private Map<Character, Integer> colorValueMap;
   private Map<Character, String> colorLabelMap;
@@ -83,21 +81,6 @@ public class GameFragment extends Fragment implements InputFilter {
     return handled;
   }
 
-  @Override
-  public CharSequence filter(CharSequence source, int sourceStart, int sourceEnd,
-      Spanned dest, int destStart, int destEnd) {
-    String modifiedSource = source.toString().toUpperCase().replaceAll(INVALID_CHAR_PATTERN, "");
-    StringBuilder builder = new StringBuilder(dest);
-    builder.replace(destStart, destEnd, modifiedSource);
-    if (builder.length() > codeLength) {
-      modifiedSource =
-          modifiedSource.substring(0, modifiedSource.length() - (builder.length() - codeLength));
-    }
-    int newLength = dest.length() - (destEnd - destStart) + modifiedSource.length();
-    binding.submit.setEnabled(newLength == codeLength);
-    return modifiedSource;
-  }
-
   private void setupMaps() {
     char[] colorCodes = getString(R.string.color_codes).toCharArray();
     codeCharacters = getString(R.string.color_codes).chars()
@@ -131,6 +114,7 @@ public class GameFragment extends Fragment implements InputFilter {
     //noinspection ConstantConditions
     adapter = new GuessAdapter(activity, colorValueMap, colorLabelMap);
     viewModel = new ViewModelProvider(activity).get(MainViewModel.class);
+    getLifecycle().addObserver(viewModel);
     LifecycleOwner lifecycleOwner = getViewLifecycleOwner();
     viewModel.getGame().observe(lifecycleOwner, this::updateGameDisplay);
     viewModel.getSolved().observe(lifecycleOwner, solved ->

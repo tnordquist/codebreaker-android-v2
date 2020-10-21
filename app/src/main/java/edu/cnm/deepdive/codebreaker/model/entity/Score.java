@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey;
 import java.util.Date;
 
 @Entity
-public class Game {
+public class Score {
 
   @PrimaryKey(autoGenerate = true)
   @ColumnInfo(name = "game_id")
