@@ -13,11 +13,9 @@ import androidx.preference.PreferenceManager;
 import edu.cnm.deepdive.codebreaker.R;
 import edu.cnm.deepdive.codebreaker.model.Code.Guess;
 import edu.cnm.deepdive.codebreaker.model.Game;
-import edu.cnm.deepdive.codebreaker.model.IllegalGuessCharacterException;
-import edu.cnm.deepdive.codebreaker.model.IllegalGuessLengthException;
-import edu.cnm.deepdive.codebreaker.model.entity.Score;
 import edu.cnm.deepdive.codebreaker.service.GameRepository;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Random;
@@ -52,11 +50,6 @@ public class MainViewModel extends AndroidViewModel implements LifecycleObserver
     codeLengthPrefDefault =
         application.getResources().getInteger(R.integer.code_length_pref_default);
     preferences = PreferenceManager.getDefaultSharedPreferences(application);
-    preferences.registerOnSharedPreferenceChangeListener((prefs, key) -> {
-      if (key.equals(codeLengthPrefKey)) {
-        startGame();
-      }
-    });
     pending = new CompositeDisposable();
     startGame();
   }
@@ -82,54 +75,60 @@ public class MainViewModel extends AndroidViewModel implements LifecycleObserver
     int codeLength = preferences.getInt(codeLengthPrefKey, codeLengthPrefDefault);
     pending.add(
         repository.newGame(POOL, codeLength, rng)
+            .doAfterSuccess((game) -> {
+              guess.postValue(null);
+              solved.postValue(false);
+              timestamp = new Date();
+              previousGuessCount = 0;
+            })
             .subscribe(
-                (game) -> {
-                  guess.setValue(null);
-                  solved.setValue(false);
-                  timestamp = new Date();
-                  previousGuessCount = 0;
-                  this.game.setValue(game);
-                },
+                game::postValue,
                 throwable::postValue
             )
     );
   }
 
   public void restartGame() {
-    throwable.setValue(null);
-    guess.setValue(null);
-    solved.setValue(false);
     Game game = this.game.getValue();
     //noinspection ConstantConditions
-    previousGuessCount += game.getGuessCount();
-    game.restart();
-    this.game.setValue(game);
+    int guessCount = game.getGuessCount();
+    throwable.setValue(null);
+    pending.add(
+        repository.restartGame(game)
+            .doOnComplete(() -> {
+              guess.postValue(null);
+              solved.postValue(false);
+              previousGuessCount += guessCount;
+            })
+            .subscribe(
+                () -> this.game.setValue(game),
+                throwable::postValue
+            )
+    );
   }
 
   public void guess(String text) {
+    Game game = this.game.getValue();
     throwable.setValue(null);
-    try {
-      Game game = this.game.getValue();
-      //noinspection ConstantConditions
-      Guess guess = game.guess(text);
-      this.guess.setValue(guess);
-      this.game.setValue(game);
-      if (guess.getCorrect() == game.getLength()) {
-        solved.setValue(true);
-        save(game);
-      }
-    } catch (IllegalGuessLengthException | IllegalGuessCharacterException e) {
-      throwable.setValue(e);
-    }
+    Disposable disposable = repository.guess(game, text)
+        .doAfterSuccess((guess) -> {
+          this.game.postValue(game);
+          //noinspection ConstantConditions
+          if (guess.getCorrect() == game.getLength()) {
+            solved.postValue(true);
+            save(game);
+          }
+        })
+        .subscribe(
+            guess::postValue,
+            throwable::postValue
+        );
+    pending.add(disposable);
   }
 
   private void save(Game game) {
-    Score score = new Score();
-    score.setCodeLength(game.getLength());
-    score.setTimestamp(timestamp);
-    score.setGuessCount(game.getGuessCount() + previousGuessCount);
     pending.add(
-        repository.save(score)
+        repository.save(game, timestamp, previousGuessCount)
             .subscribe(
                 () -> {},
                 throwable::postValue
