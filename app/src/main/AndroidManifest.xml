@@ -3,6 +3,8 @@
   xmlns:tools="http://schemas.android.com/tools"
   package="edu.cnm.deepdive.codebreaker">
 
+  <uses-permission android:name="android.permission.INTERNET"/>
+
   <application
     android:allowBackup="false"
     android:icon="@mipmap/ic_launcher"
@@ -11,17 +13,14 @@
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
     android:theme="@style/AppTheme.NoActionBar">
-    <activity
-      android:label="@string/title_activity_login"
-      android:name=".controller.LoginActivity"
-      android:theme="@style/AppTheme.NoActionBar.NoActionBar">
-    </activity>
-    <activity android:name=".controller.MainActivity">
+    <activity android:name=".controller.LoginActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
 
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
+    </activity>
+    <activity android:name=".controller.MainActivity">
     </activity>
   </application>
 
