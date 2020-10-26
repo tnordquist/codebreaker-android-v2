@@ -10,10 +10,17 @@
     android:label="@string/app_name"
     android:name="edu.cnm.deepdive.codebreaker.controller.GameFragment"
     tools:layout="@layout/fragment_game">
+
     <action
       android:id="@+id/action_navigation_game_to_navigation_summary"
       app:destination="@id/navigation_summary"
       app:popUpTo="@id/navigation_game"/>
+
+    <action
+      android:id="@+id/action_navigation_game_to_navigation_settings"
+      app:destination="@id/navigation_settings"
+      app:popUpTo="@id/navigation_game"/>
+
   </fragment>
 
   <fragment
@@ -24,6 +31,7 @@
   <fragment
     android:id="@+id/navigation_summary"
     android:label="Summary"
-    android:name="edu.cnm.deepdive.codebreaker.controller.SummaryFragment"/>
+    android:name="edu.cnm.deepdive.codebreaker.controller.SummaryFragment"
+    tools:layout="@layout/fragment_summary"/>
 
 </navigation>

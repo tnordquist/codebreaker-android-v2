@@ -10,7 +10,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -43,9 +42,6 @@ public class MainActivity extends AppCompatActivity {
     boolean handled = true;
     //noinspection SwitchStatementWithTooFewBranches
     switch (item.getItemId()) {
-      case R.id.settings:
-        navController.navigate(R.id.navigation_settings, null, navOptions);
-        break;
       default:
         handled = super.onOptionsItemSelected(item);
     }
@@ -73,12 +69,9 @@ public class MainActivity extends AppCompatActivity {
             .build();
     Toolbar toolbar = findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
-    navOptions = new NavOptions.Builder()
-        .setPopUpTo(R.id.navigation_game, false)
-        .build();
-    navController =
-        ((NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment))
-            .getNavController();
+    //noinspection ConstantConditions
+    navController = ((NavHostFragment) getSupportFragmentManager()
+        .findFragmentById(R.id.nav_host_fragment)).getNavController();
     NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
   }
 
