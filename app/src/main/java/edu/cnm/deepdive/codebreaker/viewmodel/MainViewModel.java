@@ -4,20 +4,23 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.Lifecycle.Event;
+import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.OnLifecycleEvent;
 import androidx.preference.PreferenceManager;
 import edu.cnm.deepdive.codebreaker.R;
 import edu.cnm.deepdive.codebreaker.model.Code.Guess;
 import edu.cnm.deepdive.codebreaker.model.Game;
-import edu.cnm.deepdive.codebreaker.model.IllegalGuessCharacterException;
-import edu.cnm.deepdive.codebreaker.model.IllegalGuessLengthException;
 import edu.cnm.deepdive.codebreaker.service.GameRepository;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Random;
 
-public class MainViewModel extends AndroidViewModel {
+public class MainViewModel extends AndroidViewModel implements LifecycleObserver {
 
   public static final String POOL = "ROYGBIV";
 
@@ -30,6 +33,7 @@ public class MainViewModel extends AndroidViewModel {
   private final int codeLengthPrefDefault;
   private final SharedPreferences preferences;
   private final GameRepository repository;
+  private final CompositeDisposable pending;
 
   private Date timestamp;
   private int previousGuessCount;
@@ -46,11 +50,7 @@ public class MainViewModel extends AndroidViewModel {
     codeLengthPrefDefault =
         application.getResources().getInteger(R.integer.code_length_pref_default);
     preferences = PreferenceManager.getDefaultSharedPreferences(application);
-    preferences.registerOnSharedPreferenceChangeListener((prefs, key) -> {
-      if (key.equals(codeLengthPrefKey)) {
-        startGame();
-      }
-    });
+    pending = new CompositeDisposable();
     startGame();
   }
 
@@ -72,54 +72,73 @@ public class MainViewModel extends AndroidViewModel {
 
   public void startGame() {
     throwable.setValue(null);
-    guess.setValue(null);
-    solved.setValue(false);
     int codeLength = preferences.getInt(codeLengthPrefKey, codeLengthPrefDefault);
-    Game game = new Game(POOL, codeLength, rng);
-    timestamp = new Date();
-    previousGuessCount = 0;
-    this.game.setValue(game);
+    pending.add(
+        repository.newGame(POOL, codeLength, rng)
+            .doAfterSuccess((game) -> {
+              guess.postValue(null);
+              solved.postValue(false);
+              timestamp = new Date();
+              previousGuessCount = 0;
+            })
+            .subscribe(
+                game::postValue,
+                throwable::postValue
+            )
+    );
   }
 
   public void restartGame() {
-    throwable.setValue(null);
-    guess.setValue(null);
-    solved.setValue(false);
     Game game = this.game.getValue();
     //noinspection ConstantConditions
-    previousGuessCount += game.getGuessCount();
-    game.restart();
-    this.game.setValue(game);
+    int guessCount = game.getGuessCount();
+    throwable.setValue(null);
+    pending.add(
+        repository.restartGame(game)
+            .doOnComplete(() -> {
+              guess.postValue(null);
+              solved.postValue(false);
+              previousGuessCount += guessCount;
+            })
+            .subscribe(
+                () -> this.game.setValue(game),
+                throwable::postValue
+            )
+    );
   }
 
   public void guess(String text) {
+    Game game = this.game.getValue();
     throwable.setValue(null);
-    try {
-      Game game = this.game.getValue();
-      //noinspection ConstantConditions
-      Guess guess = game.guess(text);
-      this.guess.setValue(guess);
-      this.game.setValue(game);
-      if (guess.getCorrect() == game.getLength()) {
-        solved.setValue(true);
-        save(game);
-      }
-    } catch (IllegalGuessLengthException | IllegalGuessCharacterException e) {
-      throwable.setValue(e);
-    }
+    Disposable disposable = repository.guess(game, text)
+        .doAfterSuccess((guess) -> {
+          this.game.postValue(game);
+          //noinspection ConstantConditions
+          if (guess.getCorrect() == game.getLength()) {
+            solved.postValue(true);
+            save(game);
+          }
+        })
+        .subscribe(
+            guess::postValue,
+            throwable::postValue
+        );
+    pending.add(disposable);
   }
 
   private void save(Game game) {
-    edu.cnm.deepdive.codebreaker.model.entity.Game newGame =
-        new edu.cnm.deepdive.codebreaker.model.entity.Game();
-    newGame.setCodeLength(game.getLength());
-    newGame.setTimestamp(timestamp);
-    newGame.setGuessCount(game.getGuessCount() + previousGuessCount);
-    repository.save(newGame)
-        .subscribe(
-            () -> {},
-            throwable::postValue
-        );
+    pending.add(
+        repository.save(game, timestamp, previousGuessCount)
+            .subscribe(
+                () -> {},
+                throwable::postValue
+            )
+    );
+  }
+
+  @OnLifecycleEvent(Event.ON_STOP)
+  private void clearPending() {
+    pending.clear();
   }
 
 }

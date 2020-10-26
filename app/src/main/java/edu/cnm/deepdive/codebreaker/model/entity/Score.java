@@ -1,17 +1,20 @@
 package edu.cnm.deepdive.codebreaker.model.entity;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import java.util.Date;
 
 @Entity
-public class Game {
+public class Score {
 
   @PrimaryKey(autoGenerate = true)
   @ColumnInfo(name = "game_id")
   private long id;
 
+  @SuppressWarnings("NotNullFieldNotInitialized")
+  @NonNull
   @ColumnInfo(index = true)
   private Date timestamp;
 
